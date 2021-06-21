@@ -1,0 +1,157 @@
+lis = list();
+if(basic_list != null)
+{
+	mp1 = Map();
+	mp1.put("item_id",2660923000000395001);
+	mp1.put("quantity",basic_list);
+	lis.add(mp1);
+}
+if(standard_list != null)
+{
+	mp2 = Map();
+	mp2.put("item_id",2660923000000466022);
+	mp2.put("quantity",standard_list);
+	lis.add(mp2);
+}
+if(deluxe_list != null)
+{
+	mp3 = Map();
+	mp3.put("item_id",2660923000000466031);
+	mp3.put("quantity",deluxe_list);
+	lis.add(mp3);
+}
+if(premium != null)
+{
+	mp4 = Map();
+	mp4.put("item_id",2660923000000466040);
+	mp4.put("quantity",premium);
+	lis.add(mp4);
+}
+if(premium_plus != null)
+{
+	mp5 = Map();
+	mp5.put("item_id",2660923000000466049);
+	mp5.put("quantity",premium_plus);
+	lis.add(mp5);
+}
+if(listing_e != null)
+{
+	mp6 = Map();
+	mp6.put("item_id",2660923000000395120);
+	mp6.put("quantity",listing_e);
+	lis.add(mp6);
+}
+if(listing_r != null)
+{
+	mp7 = Map();
+	mp7.put("item_id",2660923000000466058);
+	mp7.put("quantity",listing_r);
+	lis.add(mp7);
+}
+if(listing_p != null)
+{
+	mp8 = Map();
+	mp8.put("item_id",2660923000000466094);
+	mp8.put("quantity",listing_p);
+	lis.add(mp8);
+}
+if(listing_v != null)
+{
+	mp9 = Map();
+	mp9.put("item_id",2660923000000466085);
+	mp9.put("quantity",listing_v);
+	lis.add(mp9);
+}
+if(listing_u != null)
+{
+	mp10 = Map();
+	mp10.put("item_id",2660923000000466076);
+	mp10.put("quantity",listing_u);
+	lis.add(mp10);
+}
+if(listing_a != null)
+{
+	mp11 = Map();
+	mp11.put("item_id",2660923000000466067);
+	mp11.put("quantity",listing_a);
+	lis.add(mp11);
+}
+if(store_home != null)
+{
+	mp13 = Map();
+	mp13.put("item_id",2660923000000466112);
+	mp13.put("quantity",store_home);
+	lis.add(mp13);
+}
+if(store_brand != null)
+{
+	mp14 = Map();
+	mp14.put("item_id",2660923000000466121);
+	mp14.put("quantity",store_brand);
+	lis.add(mp14);
+}
+if(store_tab != null)
+{
+	mp15 = Map();
+	mp15.put("item_id",2660923000000466130);
+	mp15.put("quantity",store_tab);
+	lis.add(mp15);
+}
+det = zoho.crm.getRecordById("Deals",idf);
+info det;
+acc_id = det.getJSON("Account_Name").get("id");
+if(acc_id != null)
+{
+	res = invokeurl
+	[
+		url :"https://books.zoho.com/api/v3/contacts?organization_id=123456&zcrm_account_id=" + acc_id
+		type :GET
+		connection:"z_books"
+	];
+	info res;
+	cont = res.getJSON("contacts");
+	if(cont != null)
+	{
+		for each  i in cont
+		{
+			c_id = i.getJSON("contact_id");
+		}
+	}
+}
+JSONString = Map();
+JSONString.put("customer_id",c_id);
+JSONString.put("line_items",lis);
+JSONString.put("zcrm_potential_id",idf);
+JSONString.put("date",zoho.currentdate.toString("yyyy-MM-dd"));
+response = invokeurl
+[
+	url :"https://books.zoho.com/api/v3/invoices?organization_id=123456"
+	type :POST
+	parameters:JSONString.toString()
+	connection:"z_books"
+];
+info response;
+messages = response.getJSON("message");
+if(messages.containsIgnoreCase("created") == true)
+{
+	invoice = response.getJSON("invoice");
+	inv_id = invoice.getJSON("invoice_id");
+	//send invoice
+	co = det.getJSON("Contact_Name").get("id");
+	if(co != null)
+	{
+		co_det = zoho.crm.getRecordById("Contacts",co);
+		info co_det;
+		email = co_det.getJSON("Email");
+		m = Map();
+		m.put("to_mail_ids",{email});
+		cst = invokeurl
+		[
+			url :"https://books.zoho.com/api/v3/invoices/" + inv_id + "/email?organization_id=123456&send_attachment=true"
+			type :POST
+			parameters:m.toString()
+			connection:"z_books"
+		];
+		info cst;
+	}
+}
