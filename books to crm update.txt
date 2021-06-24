@@ -1,0 +1,34 @@
+
+/*
+This is a sample function. Uncomment to execute or make changes to this function.
+invoiceID = invoice.get("invoice_id");
+invoicedate = invoice.get("date").toDate();
+organizationID = organization.get("organization_id");
+*/
+info invoice;
+deal_id = invoice.getJSON("zcrm_potential_id");
+info deal_id;
+if(deal_id != null)
+{
+	mp = Map();
+	if(invoice.getJSON("status").equalsIgnoreCase("partially_paid") == true)
+	{
+		mp.put("Invoice_Status","Partially Paid");
+		paid = invoice.getJSON("total").toLong() - invoice.getJSON("balance").toLong();
+		mp.put("Paid",paid);
+		mp.put("Balance",invoice.getJSON("balance").toLong());
+		info mp;
+	}
+	else if(invoice.getJSON("status").equalsIgnoreCase("paid") == true)
+	{
+		mp.put("Invoice_Status","Paid");
+		paid1 = invoice.getJSON("total").toLong() - invoice.getJSON("balance").toLong();
+		mp.put("Paid",paid1);
+		mp.put("Balance",invoice.getJSON("balance").toLong());
+		info mp;
+	}
+	if(mp.isEmpty() == false)
+	{
+		info zoho.crm.updateRecord("Deals",deal_id,mp);
+	}
+}
